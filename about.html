@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        header {
+            background-color: #D83F31;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+            margin: 8px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #EE9322;
+            padding: 5px 10px; 
+        }
+
+        nav ul li:hover a {
+            background-color: #E9B824;
+            color: #219C90;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .section1 {
+            background-color: #E9B824;
+            padding: 20px;
+        }
+
+        .section2a, .section2b {
+            background-color: #6499e9;
+            padding: 20px;
+            display: inline-block;
+            width: 48%;
+            vertical-align: top;
+            margin-right: 2%;
+        }
+
+        .profile-image {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            display: block;
+            margin: 0 auto;
+            filter: grayscale(100%);
+            transition: filter 0.5s; 
+            
+        }
+
+        .biography ul {
+            padding: 0;
+        }
+
+        .biography ul li:nth-child(1) {
+            color: #FF7F50;
+        }
+
+        .biography ul li:nth-child(2) {
+            color: #32CD32;
+        }
+
+        .biography ul li:nth-child(3) {
+            color: #9370DB;
+        }
+
+        .section2-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .section2a, .section2b {
+            background-color: #6499e9;
+            padding: 20px;
+            flex: 1; 
+        }
+
+        .image-container {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0; 
+            transition: opacity 0.5s;
+        }
+
+        .image-container:hover .profile-image {
+            filter: blur(5px);
+        }
+
+        .image-container:hover .overlay {
+            opacity: 1
+        }
+
+        .image-container:hover .text {
+            opacity: 1;
+        }
+
+        .text {
+            color: #E9B824;
+            font-size: 20px;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="schedule.html">Schedule</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="images.html">Images</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="content">
+        <div class="section1">
+            <h1>About Me</h1>
+            <p>This is the introduction of myself.</p>
+
+            <div class="section2-container">
+                <div class="section2a">
+                    <div class="image-container">
+                        <img src="https://media.licdn.com/dms/image/D4E03AQFDsJvdX5iRMw/profile-displayphoto-shrink_800_800/0/1669230411911?e=1701907200&v=beta&t=6a20eo-n3o5L0Kpolsd3VFe2ncwbvLlHDeXGUtpnP2I" 
+                        alt="Me" class="profile-image">
+                        <div class="overlay"></div>
+                        <div class="text">Noël</div>
+                    </div>
+                    <h2>Noël Hermans</h2>
+                    <h2>Student</h2>
+                </div>
+            
+                <div class="section2b">
+                    <div class="biography">
+                        <h2>Biography</h2>
+                        <p>My name is Noël Hermans. I am 22 years old and from The Netherlands
+                            I am currently studying computer science at Rotterdam University of Applied Sciences.
+                            Right now I am doing an external minor at Taipei Tech.
+                        </p>
+                    </div>
+                    <div class="biography">
+                        <ul>
+                            <li><a href="https://www.linkedin.com/in/no%C3%ABl-hermans-2a9b80215/">Linkedin</a></li>
+                            <li><a href="https://www.hogeschoolrotterdam.nl/">Rottedam University of Applied Sciences</a></li>
+                            <li><a href="https://www.ntut.edu.tw/">Taipei Tech</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
