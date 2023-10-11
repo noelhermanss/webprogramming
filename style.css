@@ -1,0 +1,26 @@
+th, td {
+    border: 1px solid black; 
+    text-align: center;
+    background-color: beige;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 5px;
+}
+.table-container {
+    display: flex;
+}
+.table-container table {
+    margin-right: 10px;
+}
+th {
+    background-color: navy;
+    color: white;
+}
+.green-cell {
+    background-color: green;
+    color: white;
+}
+table {
+    background-color: white;
+    border: 1px solid black; 
+    padding: 2px;
+}
