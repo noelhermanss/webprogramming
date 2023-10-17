@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {box-sizing: border-box;}
+
+.flexcontainer {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.container {
+  position: relative;
+  width: 50%;
+  max-width: 300px;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+}
+
+.overlay {
+  position: absolute; 
+  bottom: 15%; 
+  background: rgb(255, 255, 255);
+  background: rgba(255, 255, 255, 0.5);
+  color: brown; 
+  width: 100%;
+  transition: .5s ease;
+  opacity:0;
+  color: brown;
+  font-size: 14px;
+  padding: 9px;
+  text-align: center;
+}
+
+.container:hover .overlay {
+  opacity: 1;
+}
+</style>
+</head>
+<body>
+<div class="flexcontainer">
+    <div class="container">
+        <img src="https://media.licdn.com/dms/image/D4E03AQFDsJvdX5iRMw/profile-displayphoto-shrink_800_800/0/1669230411911?e=1701907200&v=beta&t=6a20eo-n3o5L0Kpolsd3VFe2ncwbvLlHDeXGUtpnP2I" alt="Avatar" class="image">
+    </div>
+        
+    <div class="container">
+    <img src="https://media.licdn.com/dms/image/D4E03AQFDsJvdX5iRMw/profile-displayphoto-shrink_800_800/0/1669230411911?e=1701907200&v=beta&t=6a20eo-n3o5L0Kpolsd3VFe2ncwbvLlHDeXGUtpnP2I" alt="Avatar" class="image" usemap="#linkmap">
+    <div class="overlay">My Name is Noël</div>
+    </div>
+
+    <map name="linkmap">
+        <area shape="circle" coords="120,60,40" alt="link" href="https://www.linkedin.com/in/no%C3%ABl-hermans-2a9b80215/" target="_blank">
+    </map>
+</div>
+</body>
+</html>
