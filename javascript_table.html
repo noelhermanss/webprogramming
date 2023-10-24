@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Table with Background Colors</title>
+    <style>
+        th {
+            background-color: #4CAF50;
+            color: white;
+            border: 1px solid black;
+        }
+        td {
+            border: 1px solid black;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 50%;
+            border: 3px solid black;
+            padding: 2px;
+            text-align: center;
+            background-color: #f2f2f2;
+            border-spacing: 3px;
+        }
+    </style>
+    <script src="table.js"></script>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Math</th>
+                <th>English</th>
+                <th>Programming</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>90</td>
+                <td>60</td>
+                <td>80</td>
+            </tr>
+            <tr>
+                <td>80</td>
+                <td>86</td>
+                <td>98</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Change the table width:</p>
+    <button onclick="changeTableWidth('200px')">200px</button>
+    <button onclick="changeTableWidth('500px')">500px</button>
+    <p>Change the Border and Spacing width:</p>
+    <button onclick="changeTableBorderAndSpacing(1)">1px</button>
+    <button onclick="changeTableBorderAndSpacing(10)">10px</button>
+    <button onclick="changeTableBorderAndSpacing(20)">20px</button>
+    <p>Change the color:</p>
+    <button style="background-color: red;" onclick="changeTableBackgroundColor('red')">Red</button>
+    <button style="background-color: blue;" onclick="changeTableBackgroundColor('blue')">Blue</button>
+    <button style="background-color: yellow;" onclick="changeTableBackgroundColor('yellow')">Yellow</button>
+    <button style="background-color: purple;" onclick="changeTableBackgroundColor('purple')">Purple</button>
+    <p>Reset:</p>
+    <button onclick="resetTableStyles()">Reset</button>
+</body>
+</html>
