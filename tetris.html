@@ -181,6 +181,20 @@
                 isMoving = true;
                 draw();
                 isMoving = false;
+
+                // Check if the block is dead after moving
+                if (hitBottom(dragStartBlock)) {
+                    dragStartBlock.isDead = true;
+
+                    // if the block is the selected block, select another block
+                    if (dragStartBlock.isSelected) {
+                        dragStartBlock.isSelected = false;
+                        let nextBlock = activeBlocks.find((block) => block.isDead === false);
+                        if (nextBlock) {
+                            nextBlock.isSelected = true;
+                        }
+                    }
+                }
             }
         });
 
@@ -238,20 +252,27 @@
         ];
 
         function drawGrid() {
+            // Draw the grid
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < columns; col++) {
-                const x = col * cellSize;
-                const y = row * cellSize;
+                    const x = col * cellSize;
+                    const y = row * cellSize;
 
-                context.fillStyle = cellColor;
-                context.fillRect(x, y, cellSize, cellSize);
+                    context.fillStyle = cellColor;
+                    context.fillRect(x, y, cellSize, cellSize);
 
-                context.strokeStyle = spaceColor;
-                context.strokeRect(x, y, cellSize, cellSize);
+                    context.strokeStyle = spaceColor;
+                    context.strokeRect(x, y, cellSize, cellSize);
                 }
             }
+            
+            // Draw the ceiling line
+            context.beginPath();
+            context.moveTo(0, ceiling * cellSize);
+            context.lineTo(canvas.width, ceiling * cellSize);
+            context.strokeStyle = 'red';
+            context.stroke();
         }
-
         drawGrid();
 
         class Block {
@@ -515,6 +536,20 @@
             isMoving = true;
             draw();
             isMoving = false;
+
+            // Check if the block is dead after moving
+            if (hitBottom(block)) {
+                block.isDead = true;
+
+                // if the block is the selected block, select another block
+                if (block.isSelected) {
+                    block.isSelected = false;
+                    let nextBlock = activeBlocks.find((block) => block.isDead === false);
+                    if (nextBlock) {
+                        nextBlock.isSelected = true;
+                    }
+                }
+            }
         }
 
         function moveRight() {
@@ -531,6 +566,20 @@
             isMoving = true;
             draw();
             isMoving = false;
+
+            // Check if the block is dead after moving
+            if (hitBottom(block)) {
+                block.isDead = true;
+
+                // if the block is the selected block, select another block
+                if (block.isSelected) {
+                    block.isSelected = false;
+                    let nextBlock = activeBlocks.find((block) => block.isDead === false);
+                    if (nextBlock) {
+                        nextBlock.isSelected = true;
+                    }
+                }
+            }
         }
 
         function hitBoundary(block, direction) {
@@ -632,6 +681,20 @@
             isMoving = true;
             draw();
             isMoving = false;
+
+            // Check if the block is dead after rotating
+            if (hitBottom(block)) {
+                block.isDead = true;
+
+                // if the block is the selected block, select another block
+                if (block.isSelected) {
+                    block.isSelected = false;
+                    let nextBlock = activeBlocks.find((block) => block.isDead === false);
+                    if (nextBlock) {
+                        nextBlock.isSelected = true;
+                    }
+                }
+            }
         }
 
         function reset() {
