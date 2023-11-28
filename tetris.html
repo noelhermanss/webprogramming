@@ -5,35 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Midterm Project Noël Hermans</title>
     <style>
-        .container {
+        body {
             display: flex;
-            justify-content: center;
             align-items: center;
             text-align: center;
-            margin: 0 auto;
+            flex-direction: row;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f8ff;
         }
 
         .gameContainer {
-            margin-right: 20px;
-            margin-left: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f5f5f5;
+            padding: 1vh;
+            border-radius: 8px;
+            border: 2px solid #ddd;
         }
+
+        /* .nextBlockContainer {
+            position: absolute;
+            top: 35%;
+            left: 18%;
+            background-color: #e74c3c;
+            border-radius: 10px;
+            border: 2px solid #c0392b;
+            padding: 2vh;
+        }
+
+        .scoreContainer {
+            position: absolute;
+            top: 43%;
+            left: 63%;
+            background-color: #27ae60;
+            border-radius: 10px;
+            border: 2px solid #219653;
+            padding: 1vh;
+        } */
 
         .title {
             font-size: 40px;
             font-weight: bold;
-            margin: 0 auto;
+            margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         canvas {
             display: block;
             margin: 0 auto;
+            border: 3px solid #000;
+            border-radius: 5px;
         }
 
         .buttonContainer {
             display: flex;
             justify-content: center;
             margin-top: 10px;
+            background-color: #2ecc71;
+            padding: 1vh;
+            border-radius: 5px;
         }
 
         button {
@@ -42,42 +75,58 @@
             font-size: 16px;
             border-radius: 5px;
             border: none;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .controlButton {
-            background-color: #228B22;
-            color: #FFFFFF;
-            width: 35px; 
+            background-color: #27ae60;
+            color: #ffffff;
+            width: 35px;
         }
 
         #resetButton {
-            background-color: #D2042D; 
-            color: #FFFFFF; 
+            background-color: #e74c3c;
+            color: #ffffff;
         }
+
+        /* #nextBlockCanvas {
+            border: 2px solid #000;
+            margin-top: 1vh;
+        } */
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <div class="gameContainer">
-            <h1 class="title">Tetris</h1>
+    <!-- <div class="nextBlockContainer">
+        <h1 class="title">Next Block:</h1>
+        <canvas id="nextBlockCanvas" width="120" height="120"></canvas>
+    </div> -->
+    <div class="gameContainer">
+        <h1 class="title">Tetris</h1>
 
-            <canvas id="gridCanvas" width="240" height="480"></canvas>
+        <canvas id="gridCanvas" width="240" height="480"></canvas>
 
-            <div class="buttonContainer">
-                <button class="controlButton" id="playButton" onclick="play()"><i class="fas fa-play"></i></button>
-                <button class="controlButton" id="pauseButton" onclick="pause()"><i class="fas fa-pause"></i></button>
-                <button class="controlButton" onclick="moveLeft()"><i class="fas fa-arrow-left"></i></button>
-                <button class="controlButton" onclick="moveRight()"><i class="fas fa-arrow-right"></i></button>
-                <button class="controlButton" onclick="rotate()"><i class="fas fa-redo"></i></button>
-                <button id="resetButton" onclick="reset()">Reset</button>
-            </div>
+        <div class="buttonContainer">
+            <button class="controlButton" id="playButton" onclick="play()"><i class="fas fa-play"></i></button>
+            <button class="controlButton" id="pauseButton" onclick="pause()"><i class="fas fa-pause"></i></button>
+            <button class="controlButton" onclick="moveLeft()"><i class="fas fa-arrow-left"></i></button>
+            <button class="controlButton" onclick="moveRight()"><i class="fas fa-arrow-right"></i></button>
+            <button class="controlButton" onclick="rotate()"><i class="fas fa-redo"></i></button>
+            <button id="resetButton" onclick="reset()">Reset</button>
         </div>
     </div>
+    <!-- <div class="scoreContainer">
+        <h1 class="title">Score</h1>
+        <h2 id="score">0</h3>
+    </div> -->
 
     <script>
         canvas = document.getElementById("gridCanvas");
         context = canvas.getContext("2d");
+
+        // nextBlockCanvas = document.getElementById("nextBlockCanvas");
+        // nextBlockContext = nextBlockCanvas.getContext("2d");
+        // const nextBlockCellSize = Math.min(nextBlockCanvas.width / 4, nextBlockCanvas.height / 4);
 
         canvas.addEventListener('click', function(event) {
             if (!isPaused) {
@@ -142,6 +191,18 @@
                         dragStartX = mouseX - block.x1 * cellSize;
                         dragStartY = mouseY - block.y1 * cellSize;
                         dragStartBlock = block;
+                        block.isSelected = true;
+
+                        // change isSelected to false for the previously selected block
+                        activeBlocks.forEach((otherBlock) => {
+                            if (otherBlock.id !== block.id) {
+                                otherBlock.isSelected = false;
+                            }
+                        });
+                        
+                        isMoving = true;
+                        draw();
+                        isMoving = false;
                         return;  // Exit the loop once a block is selected
                     }
                 });
@@ -149,51 +210,52 @@
         });
 
         canvas.addEventListener('mousemove', function (event) {
-            if (isDragging) {
+            if (isDragging && !isPaused) {
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = event.clientX - rect.left;
                 const mouseY = event.clientY - rect.top;
 
-                // Calculate the new position of the block based on the mouse movement
-                const newX = Math.round((mouseX - dragStartX) / cellSize);
-                const newY = Math.round((mouseY - dragStartY) / cellSize);
+                // Calculate the new position of the dragged block based on the mouse coordinates
+                const newBlockX1 = Math.floor((mouseX - dragStartX) / cellSize);
+                const newBlockY1 = Math.floor((mouseY - dragStartY) / cellSize);
 
-                // Check if the new position is legal and update the block's coordinates
-                if (newX >= 0 && newX <= columns - (dragStartBlock.x4 - dragStartBlock.x1) &&
-                    newY >= 0 && newY <= rows - (dragStartBlock.y4 - dragStartBlock.y1) &&
-                    !hitBlock(activeBlocks, dragStartBlock, newX, newY)) {
+                // Calculate the offset between the new and old positions of the dragged block
+                const offsetX = newBlockX1 - dragStartBlock.x1;
+                const offsetY = newBlockY1 - dragStartBlock.y1;
 
-                    const xOffset = dragStartBlock.x1 - newX;
-                    const yOffset = dragStartBlock.y1 - newY;
+                // Move the block to the new position
+                dragStartBlock.x1 += offsetX;
+                dragStartBlock.x2 += offsetX;
+                dragStartBlock.x3 += offsetX;
+                dragStartBlock.x4 += offsetX;
 
-                    dragStartBlock.x1 -= xOffset;
-                    dragStartBlock.x2 -= xOffset;
-                    dragStartBlock.x3 -= xOffset;
-                    dragStartBlock.x4 -= xOffset;
+                dragStartBlock.y1 += offsetY;
+                dragStartBlock.y2 += offsetY;
+                dragStartBlock.y3 += offsetY;
+                dragStartBlock.y4 += offsetY;
 
-                    dragStartBlock.y1 -= yOffset;
-                    dragStartBlock.y2 -= yOffset;
-                    dragStartBlock.y3 -= yOffset;
-                    dragStartBlock.y4 -= yOffset;
-                }
+                // Check if the block can be moved to the new position without violating constraints
+                if (
+                    !hitBoundaryWhenDragged(dragStartBlock, 'left') &&
+                    !hitBoundaryWhenDragged(dragStartBlock, 'right') &&
+                    !hitBoundaryWhenDragged(dragStartBlock, 'bottom') &&
+                    !hitBoundaryWhenDragged(dragStartBlock, 'top') &&
+                    dragStartBlock.isDead === false
+                ) {
+                    isMoving = true;
+                    draw();
+                    isMoving = false;
+                } else {
+                    // If not, revert the block to its old position
+                    dragStartBlock.x1 -= offsetX;
+                    dragStartBlock.x2 -= offsetX;
+                    dragStartBlock.x3 -= offsetX;
+                    dragStartBlock.x4 -= offsetX;
 
-                // Redraw the canvas to reflect the changes
-                isMoving = true;
-                draw();
-                isMoving = false;
-
-                // Check if the block is dead after moving
-                if (hitBottom(dragStartBlock)) {
-                    dragStartBlock.isDead = true;
-
-                    // if the block is the selected block, select another block
-                    if (dragStartBlock.isSelected) {
-                        dragStartBlock.isSelected = false;
-                        let nextBlock = activeBlocks.find((block) => block.isDead === false);
-                        if (nextBlock) {
-                            nextBlock.isSelected = true;
-                        }
-                    }
+                    dragStartBlock.y1 -= offsetY;
+                    dragStartBlock.y2 -= offsetY;
+                    dragStartBlock.y3 -= offsetY;
+                    dragStartBlock.y4 -= offsetY;
                 }
             }
         });
@@ -202,25 +264,12 @@
             isDragging = false;
         });
 
-        function hitBlock(blocks, currentBlock, newX, newY) {
-            // Check if the new position collides with other blocks
-            return blocks.some((block) => {
-                if (block !== currentBlock) {
-                    return (
-                        (newX >= block.x1 && newX <= block.x4 && newY >= block.y1 && newY <= block.y4) ||
-                        (newX + (currentBlock.x4 - currentBlock.x1) >= block.x1 &&
-                            newX + (currentBlock.x4 - currentBlock.x1) <= block.x4 &&
-                            newY + (currentBlock.y4 - currentBlock.y1) >= block.y1 &&
-                            newY + (currentBlock.y4 - currentBlock.y1) <= block.y4)
-                    );
-                }
-                return false;
-            });
-        }
-
         const rows = 20;
         const columns = 10;
         const cellSize = Math.min(canvas.width / columns, canvas.height / rows);
+
+        // const nextBlockRows = 4;
+        // const nextBlockColumns = 4;
 
         const cellColor = '#ebeef2';
         const spaceColor = '#FFFFFF';
@@ -233,6 +282,27 @@
         let isMoving = false;
 
         let ceiling = 3;
+
+        // let score = 0;
+
+        // function updateScore(clearedRows) {
+        //     switch (clearedRows) {
+        //         case 1:
+        //             score += 40;
+        //             break;
+        //         case 2:
+        //             score += 100;
+        //             break;
+        //         case 3:
+        //             score += 300;
+        //             break;
+        //         case 4:
+        //             score += 1200;
+        //             break;
+        //     }
+
+        //     document.getElementById("score").innerHTML = score;
+        // }
 
         const blockColors = [
             '#00FF00',
@@ -274,6 +344,23 @@
             context.stroke();
         }
         drawGrid();
+
+        // function drawNextBlockGrid() {
+        //     // Draw the grid
+        //     for (let row = 0; row < nextBlockRows; row++) {
+        //         for (let col = 0; col < nextBlockColumns; col++) {
+        //             const x = col * nextBlockCellSize;
+        //             const y = row * nextBlockCellSize;
+
+        //             nextBlockContext.fillStyle = cellColor;
+        //             nextBlockContext.fillRect(x, y, nextBlockCellSize, nextBlockCellSize);
+
+        //             nextBlockContext.strokeStyle = spaceColor;
+        //             nextBlockContext.strokeRect(x, y, nextBlockCellSize, nextBlockCellSize);
+        //         }
+        //     }
+        // }
+        // drawNextBlockGrid();
 
         class Block {
             constructor(id, colour, x1, x2, x3, x4, y1, y2, y3, y4, isSelected, isDead) {
@@ -322,10 +409,10 @@
             context.fillRect(block.x4 * cellSize, block.y4 * cellSize, cellSize, cellSize);
 
             if (block.isSelected) {
-                context.strokeStyle = '#D2042D';
+                context.strokeStyle = '#FF0A01';
             }
             else {
-                context.strokeStyle = '#FFFFFF';
+                context.strokeStyle = '#000000';
             }
             context.lineWidth = 2;
             context.strokeRect(block.x1 * cellSize, block.y1 * cellSize, cellSize, cellSize);
@@ -358,99 +445,125 @@
             );
         }
 
-        function removeFullRows() {
-            for (let row = rows - 1; row >= 0; row--) {
-                let isFullRow = true;
+        // function removeFullRows() {
+        //     let clearedRows = 0;
 
-                // Check if all cells in the row are occupied by a block
-                for (let col = 0; col < columns; col++) {
-                    if (!activeBlocks.some(block =>
-                        (block.y1 === row && block.isDead && (block.x1 === col || block.x2 === col || block.x3 === col || block.x4 === col)) ||
-                        (block.y2 === row && block.isDead && (block.x1 === col || block.x2 === col || block.x3 === col || block.x4 === col)) ||
-                        (block.y3 === row && block.isDead && (block.x1 === col || block.x2 === col || block.x3 === col || block.x4 === col)) ||
-                        (block.y4 === row && block.isDead && (block.x1 === col || block.x2 === col || block.x3 === col || block.x4 === col))
-                    )) {
-                        isFullRow = false;
-                        break;
-                    }
-                }
+        //     for (let row = rows - 1; row >= 0; row--) {
+        //         let isFullRow = true;
 
-                if (isFullRow) {
-                    // Iterate over the blocks to adjust positions or delete them
-                    for (let i = 0; i < activeBlocks.length; i++) {
-                        let block = activeBlocks[i];
+        //         // Check if all cells in the row are occupied by a block
+        //         for (let col = 0; col < columns; col++) {
+        //             if (!activeBlocks.some(block =>
+        //                 (block.y1 === row && block.isDead && (block.x1 === col || block.x2 === col || block.x3 === col || block.x4 === col)) ||
+        //                 (block.y2 === row && block.isDead && (block.x1 === col || block.x2 === col || block.x3 === col || block.x4 === col)) ||
+        //                 (block.y3 === row && block.isDead && (block.x1 === col || block.x2 === col || block.x3 === col || block.x4 === col)) ||
+        //                 (block.y4 === row && block.isDead && (block.x1 === col || block.x2 === col || block.x3 === col || block.x4 === col))
+        //             )) {
+        //                 isFullRow = false;
+        //                 break;
+        //             }
+        //         }
 
-                        // First, we check if the block has all of its cells in the row
-                        // If so, we delete the block
+        //         if (isFullRow) {
+        //             clearedRows++;
+        //             // Iterate over the blocks to adjust positions or delete them
+        //             for (let i = 0; i < activeBlocks.length; i++) {
+        //                 let block = activeBlocks[i];
 
-                        if (block.y1 === row && block.y2 === row && block.y3 === row && block.y4 === row) {
-                            activeBlocks.splice(i, 1);
-                            i--;
-                        } else {
-                            // If not, we check if the block has any cells above the row
-                            // If so, we copy the coordinates of the cells above the row to the cells in the row
+        //                 // First, we check if the block has all of its cells in the row
+        //                 // If so, we delete the block
 
-                            if (block.y1 === row) {
-                                if (block.y2 !== row) {
-                                    block.y1 = block.y2;
-                                    block.x1 = block.x2;
-                                } else if (block.y3 !== row) {
-                                    block.y1 = block.y3;
-                                    block.x1 = block.x3;
-                                } else {
-                                    block.y1 = block.y4;
-                                    block.x1 = block.x4;
-                                }
-                            }
+        //                 if (block.y1 === row && block.y2 === row && block.y3 === row && block.y4 === row) {
+        //                     activeBlocks.splice(i, 1);
+        //                     i--;
+        //                 } else {
+        //                     // If not, we check if the block has any cells above the row
+        //                     // If so, we copy the coordinates of the cells above the row to the cells in the row
 
-                            if (block.y2 === row) {
-                                if (block.y1 !== row) {
-                                    block.y2 = block.y1;
-                                    block.x2 = block.x1;
-                                } else if (block.y3 !== row) {
-                                    block.y2 = block.y3;
-                                    block.x2 = block.x3;
-                                } else {
-                                    block.y2 = block.y4;
-                                    block.x2 = block.x4;
-                                }
-                            }
+        //                     if (block.y1 === row) {
+        //                         if (block.y2 !== row) {
+        //                             block.y1 = block.y2;
+        //                             block.x1 = block.x2;
+        //                         } else if (block.y3 !== row) {
+        //                             block.y1 = block.y3;
+        //                             block.x1 = block.x3;
+        //                         } else {
+        //                             block.y1 = block.y4;
+        //                             block.x1 = block.x4;
+        //                         }
+        //                     }
 
-                            if (block.y3 === row) {
-                                if (block.y1 !== row) {
-                                    block.y3 = block.y1;
-                                    block.x3 = block.x1;
-                                } else if (block.y2 !== row) {
-                                    block.y3 = block.y2;
-                                    block.x3 = block.x2;
-                                } else {
-                                    block.y3 = block.y4;
-                                    block.x3 = block.x4;
-                                }
-                            }
+        //                     if (block.y2 === row) {
+        //                         if (block.y1 !== row) {
+        //                             block.y2 = block.y1;
+        //                             block.x2 = block.x1;
+        //                         } else if (block.y3 !== row) {
+        //                             block.y2 = block.y3;
+        //                             block.x2 = block.x3;
+        //                         } else {
+        //                             block.y2 = block.y4;
+        //                             block.x2 = block.x4;
+        //                         }
+        //                     }
 
-                            if (block.y4 === row) {
-                                if (block.y1 !== row) {
-                                    block.y4 = block.y1;
-                                    block.x4 = block.x1;
-                                } else if (block.y2 !== row) {
-                                    block.y4 = block.y2;
-                                    block.x4 = block.x2;
-                                } else {
-                                    block.y4 = block.y3;
-                                    block.x4 = block.x3;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        //                     if (block.y3 === row) {
+        //                         if (block.y1 !== row) {
+        //                             block.y3 = block.y1;
+        //                             block.x3 = block.x1;
+        //                         } else if (block.y2 !== row) {
+        //                             block.y3 = block.y2;
+        //                             block.x3 = block.x2;
+        //                         } else {
+        //                             block.y3 = block.y4;
+        //                             block.x3 = block.x4;
+        //                         }
+        //                     }
+
+        //                     if (block.y4 === row) {
+        //                         if (block.y1 !== row) {
+        //                             block.y4 = block.y1;
+        //                             block.x4 = block.x1;
+        //                         } else if (block.y2 !== row) {
+        //                             block.y4 = block.y2;
+        //                             block.x4 = block.x2;
+        //                         } else {
+        //                             block.y4 = block.y3;
+        //                             block.x4 = block.x3;
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     updateScore(clearedRows);
+        // }
 
         let lastBlockTime = Date.now();
 
+        // let nextBlock = createBlock();
+
+        // function drawNextBlock() {
+        //     // Calculate the position to center the block in the canvas
+        //     const xOffset = (nextBlockCanvas.width - (nextBlockCellSize * 4)) / 2;
+        //     const yOffset = (nextBlockCanvas.height - (nextBlockCellSize * 4)) / 2;
+
+        //     nextBlockContext.fillStyle = nextBlock.colour;
+        //     nextBlockContext.fillRect(nextBlock.x1 * nextBlockCellSize + xOffset, nextBlock.y1 * nextBlockCellSize + yOffset, nextBlockCellSize, nextBlockCellSize);
+        //     nextBlockContext.fillRect(nextBlock.x2 * nextBlockCellSize + xOffset, nextBlock.y2 * nextBlockCellSize + yOffset, nextBlockCellSize, nextBlockCellSize);
+        //     nextBlockContext.fillRect(nextBlock.x3 * nextBlockCellSize + xOffset, nextBlock.y3 * nextBlockCellSize + yOffset, nextBlockCellSize, nextBlockCellSize);
+        //     nextBlockContext.fillRect(nextBlock.x4 * nextBlockCellSize + xOffset, nextBlock.y4 * nextBlockCellSize + yOffset, nextBlockCellSize, nextBlockCellSize);
+
+        //     nextBlockContext.strokeStyle = '#000000';
+        //     nextBlockContext.lineWidth = 2;
+        //     nextBlockContext.strokeRect(nextBlock.x1 * nextBlockCellSize + xOffset, nextBlock.y1 * nextBlockCellSize + yOffset, nextBlockCellSize, nextBlockCellSize);
+        //     nextBlockContext.strokeRect(nextBlock.x2 * nextBlockCellSize + xOffset, nextBlock.y2 * nextBlockCellSize + yOffset, nextBlockCellSize, nextBlockCellSize);
+        //     nextBlockContext.strokeRect(nextBlock.x3 * nextBlockCellSize + xOffset, nextBlock.y3 * nextBlockCellSize + yOffset, nextBlockCellSize, nextBlockCellSize);
+        //     nextBlockContext.strokeRect(nextBlock.x4 * nextBlockCellSize + xOffset, nextBlock.y4 * nextBlockCellSize + yOffset, nextBlockCellSize, nextBlockCellSize);
+        // }
+
         function draw() {
             drawGrid();
+            // drawNextBlockGrid();
 
             if (!isStarted) {
                 // Initialize the game by creating the first block
@@ -460,6 +573,7 @@
                 lastBlockTime = Date.now();
                 drawBlock(block);
                 isStarted = true; // Set isStarted to true after the first block is created
+                // drawNextBlock();
             } else {
                 for (let i = 0; i < activeBlocks.length; i++) {
                     let block = activeBlocks[i];
@@ -469,7 +583,7 @@
                         block.isSelected = true;
                     }
 
-                    if (block.isDead && block.y1 <= ceiling) {
+                    if (block.isDead && (block.y1 < ceiling || block.y2 < ceiling || block.y3 < ceiling || block.y4 < ceiling)) {
                         gameOver();
                         return;
                     }
@@ -499,12 +613,14 @@
 
                 // Check if 5 seconds have passed since the last block creation
                 if (Date.now() - lastBlockTime >= 5000) {
-                    let newBlock = createBlock();
-                    activeBlocks.push(newBlock);
+                    block = createBlock();
+                    activeBlocks.push(block);
+                    // nextBlock = createBlock();
                     lastBlockTime = Date.now(); // Update the last block creation time
                 }
             }
-            removeFullRows();
+            // removeFullRows();
+            // drawNextBlock();
         }
 
         function play() {
@@ -586,13 +702,15 @@
             // Check if the block is trying to move out of the canvas boundaries
             if (
                 (direction === 'left' && (block.x1 - 1 < 0 || block.x2 - 1 < 0 || block.x3 - 1 < 0 || block.x4 - 1 < 0)) ||
-                (direction === 'right' && (block.x1 + 1 >= columns || block.x2 + 1 >= columns || block.x3 + 1 >= columns || block.x4 + 1 >= columns))
+                (direction === 'right' && (block.x1 + 1 >= columns || block.x2 + 1 >= columns || block.x3 + 1 >= columns || block.x4 + 1 >= columns)) ||
+                (direction === 'bottom' && (block.y1 + 1 >= rows || block.y2 + 1 >= rows || block.y3 + 1 >= rows || block.y4 + 1 >= rows)) ||
+                (direction === 'top' && (block.y1 - 1 < 0 || block.y2 - 1 < 0 || block.y3 - 1 < 0 || block.y4 - 1 < 0))
             ) {
                 return true;
             }
 
             // Check if the block is trying to move into a position where another block is already present
-            // Get all coordinates to the left or right of the block
+            // Get all coordinates to the left, right, top or bottom of the block
             const leftCoordinates = [
                 { x: block.x1 - 1, y: block.y1 },
                 { x: block.x2 - 1, y: block.y2 },
@@ -607,7 +725,21 @@
                 { x: block.x4 + 1, y: block.y4 }
             ];
 
-            // Check if any of the coordinates to the left or right of the block are occupied by another block
+            const topCoordinates = [
+                { x: block.x1, y: block.y1 - 1 },
+                { x: block.x2, y: block.y2 - 1 },
+                { x: block.x3, y: block.y3 - 1 },
+                { x: block.x4, y: block.y4 - 1 }
+            ];
+
+            const bottomCoordinates = [
+                { x: block.x1, y: block.y1 + 1 },
+                { x: block.x2, y: block.y2 + 1 },
+                { x: block.x3, y: block.y3 + 1 },
+                { x: block.x4, y: block.y4 + 1 }
+            ];
+
+            // Check if any of the coordinates to the left, right, top or bottom of the block are occupied by another block
             return (
                 leftCoordinates.some(
                     (coordinate) =>
@@ -621,6 +753,118 @@
                         )
                 ) ||
                 rightCoordinates.some(
+                    (coordinate) =>
+                        activeBlocks.some(
+                            (otherBlock) =>
+                                otherBlock.id !== block.id &&
+                                (otherBlock.x1 === coordinate.x && otherBlock.y1 === coordinate.y ||
+                                otherBlock.x2 === coordinate.x && otherBlock.y2 === coordinate.y ||
+                                otherBlock.x3 === coordinate.x && otherBlock.y3 === coordinate.y ||
+                                otherBlock.x4 === coordinate.x && otherBlock.y4 === coordinate.y)
+                        )
+                ) ||
+                topCoordinates.some(
+                    (coordinate) =>
+                        activeBlocks.some(
+                            (otherBlock) =>
+                                otherBlock.id !== block.id &&
+                                (otherBlock.x1 === coordinate.x && otherBlock.y1 === coordinate.y ||
+                                otherBlock.x2 === coordinate.x && otherBlock.y2 === coordinate.y ||
+                                otherBlock.x3 === coordinate.x && otherBlock.y3 === coordinate.y ||
+                                otherBlock.x4 === coordinate.x && otherBlock.y4 === coordinate.y)
+                        )
+                ) ||
+                bottomCoordinates.some(
+                    (coordinate) =>
+                        activeBlocks.some(
+                            (otherBlock) =>
+                                otherBlock.id !== block.id &&
+                                (otherBlock.x1 === coordinate.x && otherBlock.y1 === coordinate.y ||
+                                otherBlock.x2 === coordinate.x && otherBlock.y2 === coordinate.y ||
+                                otherBlock.x3 === coordinate.x && otherBlock.y3 === coordinate.y ||
+                                otherBlock.x4 === coordinate.x && otherBlock.y4 === coordinate.y)
+                        )
+                )
+            );
+        }
+
+        function hitBoundaryWhenDragged(block, direction) {
+            // Check if the block is trying to move out of the canvas boundaries
+            if (
+                (direction === 'left' && (block.x1 < 0 || block.x2< 0 || block.x3< 0 || block.x4< 0)) ||
+                (direction === 'right' && (block.x1 >= columns || block.x2 >= columns || block.x3 >= columns || block.x4 >= columns)) ||
+                (direction === 'bottom' && (block.y1 >= rows || block.y2 >= rows || block.y3 >= rows || block.y4 >= rows)) ||
+                (direction === 'top' && (block.y1 < 0 || block.y2 < 0 || block.y3 < 0 || block.y4 < 0))
+            ) {
+                return true;
+            }
+
+            // Check if the block is trying to move into a position where another block is already present
+            // Get all coordinates of the block
+            const leftCoordinates = [
+                { x: block.x1, y: block.y1 },
+                { x: block.x2, y: block.y2 },
+                { x: block.x3, y: block.y3 },
+                { x: block.x4, y: block.y4 }
+            ];
+
+            const rightCoordinates = [
+                { x: block.x1, y: block.y1 },
+                { x: block.x2, y: block.y2 },
+                { x: block.x3, y: block.y3 },
+                { x: block.x4, y: block.y4 }
+            ];
+
+            const topCoordinates = [
+                { x: block.x1, y: block.y1 },
+                { x: block.x2, y: block.y2 },
+                { x: block.x3, y: block.y3 },
+                { x: block.x4, y: block.y4 }
+            ];
+
+            const bottomCoordinates = [
+                { x: block.x1, y: block.y1 },
+                { x: block.x2, y: block.y2 },
+                { x: block.x3, y: block.y3 },
+                { x: block.x4, y: block.y4 }
+            ];
+
+            // Check if any of the coordinates to the left, right, top or bottom of the block are occupied by another block
+            return (
+                leftCoordinates.some(
+                    (coordinate) =>
+                        activeBlocks.some(
+                            (otherBlock) =>
+                                otherBlock.id !== block.id &&
+                                (otherBlock.x1 === coordinate.x && otherBlock.y1 === coordinate.y ||
+                                otherBlock.x2 === coordinate.x && otherBlock.y2 === coordinate.y ||
+                                otherBlock.x3 === coordinate.x && otherBlock.y3 === coordinate.y ||
+                                otherBlock.x4 === coordinate.x && otherBlock.y4 === coordinate.y)
+                        )
+                ) ||
+                rightCoordinates.some(
+                    (coordinate) =>
+                        activeBlocks.some(
+                            (otherBlock) =>
+                                otherBlock.id !== block.id &&
+                                (otherBlock.x1 === coordinate.x && otherBlock.y1 === coordinate.y ||
+                                otherBlock.x2 === coordinate.x && otherBlock.y2 === coordinate.y ||
+                                otherBlock.x3 === coordinate.x && otherBlock.y3 === coordinate.y ||
+                                otherBlock.x4 === coordinate.x && otherBlock.y4 === coordinate.y)
+                        )
+                ) ||
+                topCoordinates.some(
+                    (coordinate) =>
+                        activeBlocks.some(
+                            (otherBlock) =>
+                                otherBlock.id !== block.id &&
+                                (otherBlock.x1 === coordinate.x && otherBlock.y1 === coordinate.y ||
+                                otherBlock.x2 === coordinate.x && otherBlock.y2 === coordinate.y ||
+                                otherBlock.x3 === coordinate.x && otherBlock.y3 === coordinate.y ||
+                                otherBlock.x4 === coordinate.x && otherBlock.y4 === coordinate.y)
+                        )
+                ) ||
+                bottomCoordinates.some(
                     (coordinate) =>
                         activeBlocks.some(
                             (otherBlock) =>
@@ -653,7 +897,19 @@
             const relativeY3 = block.y3 - centerY;
             const relativeY4 = block.y4 - centerY;
 
-            // Rotate the block's cells
+            // store the old block coordinates in case the rotation fails
+            const oldX1 = block.x1;
+            const oldX2 = block.x2;
+            const oldX3 = block.x3;
+            const oldX4 = block.x4;
+
+            const oldY1 = block.y1;
+            const oldY2 = block.y2;
+            const oldY3 = block.y3;
+            const oldY4 = block.y4;
+
+            // Rotate the block
+
             block.x1 = Math.round(centerX - relativeY1);
             block.x2 = Math.round(centerX - relativeY2);
             block.x3 = Math.round(centerX - relativeY3);
@@ -665,17 +921,21 @@
             block.y4 = Math.round(centerY + relativeX4);
 
             // Check if the block can rotate without colliding with boundaries or other blocks
-            if (hitBoundary(block, 'left') || hitBoundary(block, 'right') || hitBlock(activeBlocks, block, block.x1, block.y1)) {
-                // If not, rotate the block back to its original position
-                block.x1 = Math.round(centerX + relativeY1);
-                block.x2 = Math.round(centerX + relativeY2);
-                block.x3 = Math.round(centerX + relativeY3);
-                block.x4 = Math.round(centerX + relativeY4);
+            // Also check if the block is not rotating out of the canvas boundaries
+            if ((hitBoundary(block, 'left') || hitBoundary(block, 'right')) || (block.x1 < 0 || block.x2 < 0 || block.x3 < 0 || block.x4 < 0 ||
+                    block.x1 >= columns || block.x2 >= columns || block.x3 >= columns || block.x4 >= columns ||
+                    block.y1 < 0 || block.y2 < 0 || block.y3 < 0 || block.y4 < 0 ||
+                    block.y1 >= rows || block.y2 >= rows || block.y3 >= rows || block.y4 >= rows)) {
+                        // If it is, revert the rotation
+                        block.x1 = oldX1;
+                        block.x2 = oldX2;
+                        block.x3 = oldX3;
+                        block.x4 = oldX4;
 
-                block.y1 = Math.round(centerY - relativeX1);
-                block.y2 = Math.round(centerY - relativeX2);
-                block.y3 = Math.round(centerY - relativeX3);
-                block.y4 = Math.round(centerY - relativeX4);
+                        block.y1 = oldY1;
+                        block.y2 = oldY2;
+                        block.y3 = oldY3;
+                        block.y4 = oldY4;
             }
 
             isMoving = true;
